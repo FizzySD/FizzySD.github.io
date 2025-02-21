@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>City Mapper</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <center>
+    <h2>Select base map (2400x1800)</h2>
+    <input type="file" id="bgInput" accept="image/*" />
+    <h2>Select City to place</h2>
+    <select id="citySelect">
+      <option value="Edinburgh">Edinburgh</option>
+      <option value="Newcastle">Newcastle</option>
+      <option value="Scarborough">Scarborough</option>
+      <option value="Boston">Boston</option>
+      <option value="London">London</option>
+      <option value="Bruegge">Bruegge</option>
+      <option value="Haarlem">Haarlem</option>
+      <option value="Harlingen">Harlingen</option>
+      <option value="Groningen">Groningen</option>
+      <option value="Koeln">Koeln</option>
+      <option value="Bremen">Bremen</option>
+      <option value="Ripen">Ripen</option>
+      <option value="Hamburg">Hamburg</option>
+      <option value="Flensburg">Flensburg</option>
+      <option value="Lubeck">Lubeck</option>
+      <option value="Rostock">Rostock</option>
+      <option value="Bergen">Bergen</option>
+      <option value="Stavanger">Stavanger</option>
+      <option value="Toensberg">Toensberg</option>
+      <option value="Oslo">Oslo</option>
+      <option value="Aalborg">Aalborg</option>
+      <option value="Goeteborg">Goeteborg</option>
+      <option value="Naestved">Naestved</option>
+      <option value="Malmoe">Malmoe</option>
+      <option value="Ahus">Ahus</option>
+      <option value="Stockholm">Stockholm</option>
+      <option value="Visby">Visby</option>
+      <option value="Helsinki">Helsinki</option>
+      <option value="Stettin">Stettin</option>
+      <option value="Ruegenwald">Ruegenwald</option>
+      <option value="Danzig">Danzig</option>
+      <option value="Thorn">Thorn</option>
+      <option value="Koenigsberg">Koenigsberg</option>
+      <option value="Memel">Memel</option>
+      <option value="Windau">Windau</option>
+      <option value="Riga">Riga</option>
+      <option value="Pernau">Pernau</option>
+      <option value="Reval">Reval</option>
+      <option value="Ladoga">Ladoga</option>
+      <option value="Novgorod">Novgorod</option>
+    </select>
+    <br/>
+    <br/>
+    <canvas id="mapCanvas" width="2400" height="1800"></canvas>
+    </center>
+    <script>
+      const cityParameters = {
+        Edinburgh: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Edinburgh.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 0,
+          AusrichtungDesMeeres: 7,
+        },
+
+        Newcastle: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\England2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 0,
+          AusrichtungDesMeeres: 2,
+        },
+        Scarborough: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\England1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 0,
+          AusrichtungDesMeeres: 2,
+        },
+        Boston: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\England2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 0,
+          AusrichtungDesMeeres: 3,
+        },
+        London: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\London.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 0,
+          AusrichtungDesMeeres: 2,
+        },
+        Bruegge: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Bruegge.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 0,
+          AusrichtungDesMeeres: 0,
+        },
+        Haarlem: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Deutschland2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 7,
+        },
+        Harlingen: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Deutschland2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 7,
+        },
+        Groningen: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Deutschland1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 0,
+        },
+        Koeln: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\koeln.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 1,
+          Region: 2,
+          AusrichtungDesMeeres: 0,
+        },
+        Bremen: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Bremen.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 0,
+        },
+        Ripen: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Deutschland2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 6,
+        },
+        Hamburg: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Hamburg.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 7,
+        },
+        Flensburg: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Deutschland1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 2,
+        },
+        Lubeck: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Luebeck.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 1,
+        },
+        Rostock: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Rostock.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 2,
+          AusrichtungDesMeeres: 7,
+        },
+        Bergen: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Bergen.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 6,
+        },
+        Stavanger: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Norden1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 6,
+        },
+        Toensberg: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Norden1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 3,
+        },
+        Oslo: {
+          NameLinksOderRechtsBuendig: "c",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Oslo.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 4,
+        },
+        Aalborg: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Aalborg.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 2,
+        },
+        Goeteborg: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Norden1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 6,
+        },
+        Naestved: {
+          NameLinksOderRechtsBuendig: "c",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Norden2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 5,
+        },
+        Malmoe: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\malmoe.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 5,
+        },
+        Ahus: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Norden2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 3,
+        },
+        Stockholm: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Stockholm.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 3,
+        },
+        Visby: {
+          NameLinksOderRechtsBuendig: "c",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Visby.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 7,
+        },
+        Helsinki: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Norden2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 1,
+          AusrichtungDesMeeres: 3,
+        },
+        Stettin: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Stettin.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 3,
+          AusrichtungDesMeeres: 7,
+        },
+        Ruegenwald: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Ruegenwald.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 3,
+          AusrichtungDesMeeres: 7,
+        },
+        Danzig: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Danzig.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 3,
+          AusrichtungDesMeeres: 1,
+        },
+        Thorn: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Thorn.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 1,
+          Region: 3,
+          AusrichtungDesMeeres: 6,
+        },
+        Koenigsberg: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Polen1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 3,
+          AusrichtungDesMeeres: 6,
+        },
+        Memel: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Polen2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 3,
+          AusrichtungDesMeeres: 6,
+        },
+        Windau: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Russland1.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 4,
+          AusrichtungDesMeeres: 6,
+        },
+        Riga: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Riga.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 4,
+          AusrichtungDesMeeres: 7,
+        },
+        Pernau: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Russland2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 4,
+          AusrichtungDesMeeres: 4,
+        },
+        Reval: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Reval.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 4,
+          AusrichtungDesMeeres: 7,
+        },
+        Ladoga: {
+          NameLinksOderRechtsBuendig: "l",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Russland2.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 0,
+          Region: 4,
+          AusrichtungDesMeeres: 7,
+        },
+        Novgorod: {
+          NameLinksOderRechtsBuendig: "r",
+          NameDerStadtMusik: "musik\\StadtkarteMusic\\Novgorod.mp3",
+          LautstaerkeDerMusik: 45,
+          AmFluss: 1,
+          Region: 4,
+          AusrichtungDesMeeres: 0,
+        },
+      };
+      const canvas = document.getElementById("mapCanvas");
+      const ctx = canvas.getContext("2d");
+      const bgInput = document.getElementById("bgInput");
+      const citySelect = document.getElementById("citySelect");
+      const points = {}; // Memorizza i punti per ogni città
+      const texts = {}; // Memorizza i testi per ogni città
+      let currentCity = null; // Città selezionata
+      let bgImage = null; // Immagine di sfondo
+
+      // Funzione per caricare l'immagine di sfondo
+      bgInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const img = new Image();
+          img.src = URL.createObjectURL(file);
+          img.onload = () => {
+            bgImage = img;
+            drawBackground(); // Disegna lo sfondo una volta caricato
+          };
+        }
+      });
+
+      // Funzione per ridisegnare lo sfondo senza cancellare i punti
+      function drawBackground() {
+        if (bgImage) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height); // Pulisce solo l'area del canvas
+          ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height); // Ridisegna lo sfondo
+          // Dopo aver ridisegnato lo sfondo, ridisegniamo i punti
+          for (const city in points) {
+            const { x, y } = points[city];
+            const { xText, yText, text } = texts[city];
+            drawPoint(x, y, city);
+            ctx.fillStyle = "white"; // Colore del testo
+            ctx.font = "18px Arial"; // Imposta il font del testo
+            ctx.fillText(text, xText - 15, yText); // Ridisegna il nome sotto il punto
+          }
+        }
+      }
+
+      // Funzione per gestire i clic sul canvas
+      canvas.addEventListener("click", (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const city = citySelect.value;
+
+        // Se la città è cambiata, non cancellare il punto, aggiungi un nuovo punto
+        if (city !== currentCity) {
+          // Disegna il nuovo punto per la città selezionata
+          points[city] = { x, y }; // Memorizza la posizione del punto per la nuova città
+          texts[city] = { text: city, xText: x - 20, yText: y + 20 }; // Memorizza il testo per la città
+          drawBackground(); // Ridisegna lo sfondo e i punti
+        } else {
+          // Se la città è la stessa, cancella il punto precedente e disegnalo nella nuova posizione
+          clearPreviousPoint(currentCity); // Cancella il punto precedente della stessa città
+          points[city] = { x, y }; // Memorizza la nuova posizione
+          texts[city] = { text: city, xText: x - 20, yText: y + 20 }; // Memorizza il nuovo testo per la città
+          drawBackground(); // Ridisegna lo sfondo e i punti
+        }
+
+        // Imposta la città attuale
+        currentCity = city;
+
+        // Genera e mostra i dati della città
+        const formattedData = formatCityData(city, x, y);
+        console.log(formattedData); // Puoi anche salvarlo su file se necessario
+      });
+
+      // Funzione per disegnare il punto
+      function drawPoint(x, y, city) {
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Funzione per cancellare il punto precedente
+      function clearPreviousPoint(city) {
+        if (points[city]) {
+          const { x, y } = points[city];
+
+          // Cancella il punto precedente disegnando sopra con un colore di sfondo (bianco)
+          ctx.fillStyle = "white";
+          ctx.beginPath();
+          ctx.arc(x, y, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Cancella anche il nome della città sotto il punto precedente
+          ctx.clearRect(texts[city].xText, texts[city].yText - 20, 80, 40); // Cancella il testo
+        }
+      }
+
+      // Funzione per generare i dati della città
+      function formatCityData(city, x, y) {
+        const cityIndex = Array.from(citySelect.options).findIndex(
+          (option) => option.value === city
+        );
+        const cityParam = cityParameters[city]; // Ottieni i parametri per la città selezionata
+        const { xText, yText } = texts[city]; // Ottieni la posizione del testo memorizzata
+
+        return `// ${city}
+        [Stadt${cityIndex}]
+        AnfahrtXPos=${x}
+        AnfahrtYPos=${y}
+        NamenXPos=${xText}  // Usa la posizione X del testo memorizzata
+        NamenYPos=${yText}  // Usa la posizione Y del testo memorizzata
+        EreignisSymbolXPos=${x + 5} // Un esempio di offset per il simbolo
+        EreignisSymbolYPos=${y + 40} // Un esempio di offset per il simbolo
+        SchiffAufLandXPos=${x - 10}  // Un esempio di offset per la nave
+        SchiffAufLandYPos=${y - 10}  // Un esempio di offset per la nave
+        StadtSymbolXPos=${x}  // Posizione del simbolo della città
+        StadtSymbolYPos=${y}
+        NameLinksOderRechtsBuendig=${cityParam.NameLinksOderRechtsBuendig}
+        NameDerStadtMusik=${cityParam.NameDerStadtMusik}
+        LautstaerkeDerMusik=${cityParam.LautstaerkeDerMusik}
+        AmFluss=${cityParam.AmFluss}
+        Region=${cityParam.Region}
+        AusrichtungDesMeeres=${cityParam.AusrichtungDesMeeres}
+        `;
+        }
+    </script>
+    <center><h5>Made by DesertFalcon (Discord: desertfalcon_)</h5>
+  </body>
+</html>
