@@ -26,7 +26,7 @@
       <option value="Ripen">Ripen</option>
       <option value="Hamburg">Hamburg</option>
       <option value="Flensburg">Flensburg</option>
-      <option value="Lubeck">Lubeck</option>
+      <option value="Luebeck">Luebeck</option>
       <option value="Rostock">Rostock</option>
       <option value="Bergen">Bergen</option>
       <option value="Stavanger">Stavanger</option>
@@ -55,6 +55,11 @@
     </select>
     <br/>
     <br/>
+    <button id="loadButton">Carica File</button>
+    <button id="saveButton">Salva Modifiche</button>
+    <br/>
+    <br/>
+    
     <canvas id="mapCanvas" width="2400" height="1800"></canvas>
     </center>
     <script>
@@ -172,7 +177,7 @@
           Region: 2,
           AusrichtungDesMeeres: 2,
         },
-        Lubeck: {
+        Luebeck: {
           NameLinksOderRechtsBuendig: "r",
           NameDerStadtMusik: "musik\\StadtkarteMusic\\Luebeck.mp3",
           LautstaerkeDerMusik: 45,
@@ -403,6 +408,66 @@
         }
       });
 
+      document.getElementById('loadButton').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.INI';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const content = e.target.result;
+                        parseCityData(content);
+                        drawBackground(); // Ridisegna lo sfondo con i nuovi punti
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        });
+
+
+        function parseCityData(content) {
+            const lines = content.split('\n');
+            let city = null;
+
+            lines.forEach(line => {
+                if (line.startsWith('//')) {
+                    currentCity = line.split(' ')[1].trim(); // Ottieni il nome della città
+                } else if (line.startsWith('AnfahrtXPos')) {
+                    const x = parseFloat(line.split('=')[1].trim());
+                    const y = parseFloat(lines[lines.indexOf(line) + 1].split('=')[1].trim());
+                    console.log(x,y,currentCity);
+                    points[currentCity] = { x, y }; // Memorizza le coordinate
+                    const textWidth = ctx.measureText(currentCity).width; // Calcola la larghezza del testo
+                    texts[currentCity] = { text: currentCity, xText: x - 82 / 2, yText: y + 20 };
+
+                }
+            });
+        }
+
+
+        document.getElementById('saveButton').addEventListener('click', () => {
+    const modifiedData = Object.keys(points).map(city => {
+        console.log(city);
+        const { x, y } = points[city];
+        const { xText, yText } = texts[city];
+        console.log(city);
+        const cityParam = cityParameters[city];
+        const textsvalue = texts[city];
+        return formatCityData(city, x, y, cityParam, textsvalue);
+    }).join('\n');
+
+    const blob = new Blob([modifiedData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cities_modified.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
       // Funzione per ridisegnare lo sfondo senza cancellare i punti
       function drawBackground() {
         if (bgImage) {
@@ -411,11 +476,15 @@
           // Dopo aver ridisegnato lo sfondo, ridisegniamo i punti
           for (const city in points) {
             const { x, y } = points[city];
-            const { xText, yText, text } = texts[city];
-            drawPoint(x, y, city);
-            ctx.fillStyle = "white"; // Colore del testo
             ctx.font = "18px Arial"; // Imposta il font del testo
-            ctx.fillText(text, xText - 15, yText); // Ridisegna il nome sotto il punto
+            const textWidth = ctx.measureText(city).width;
+            console.log(textWidth);
+            drawPoint(x, y, city);
+            texts[city] = { text: city, xText: x - textWidth / 2, yText: y + 20 }; // Centra il testo rispetto al punto
+            const { text, xText, yText } = texts[city];
+            console.log(x,xText);
+            ctx.fillStyle = "white"; // Colore del testo
+            ctx.fillText(text, xText, yText); // Ridisegna il nome sotto il punto
           }
         }
       }
@@ -427,26 +496,28 @@
         const y = event.clientY - rect.top;
         const city = citySelect.value;
 
+       // const textWidth = ctx.measureText(city).width; // Calcola la larghezza del testo
         // Se la città è cambiata, non cancellare il punto, aggiungi un nuovo punto
         if (city !== currentCity) {
           // Disegna il nuovo punto per la città selezionata
-          points[city] = { x, y }; // Memorizza la posizione del punto per la nuova città
-          texts[city] = { text: city, xText: x - 20, yText: y + 20 }; // Memorizza il testo per la città
+          points[city] = { x, y }; // Memorizza la posizione del punto per la nuova citt
           drawBackground(); // Ridisegna lo sfondo e i punti
         } else {
           // Se la città è la stessa, cancella il punto precedente e disegnalo nella nuova posizione
           clearPreviousPoint(currentCity); // Cancella il punto precedente della stessa città
           points[city] = { x, y }; // Memorizza la nuova posizione
-          texts[city] = { text: city, xText: x - 20, yText: y + 20 }; // Memorizza il nuovo testo per la città
+          //const textWidth = ctx.measureText(city).width; // Calcola la larghezza del testo
           drawBackground(); // Ridisegna lo sfondo e i punti
         }
 
         // Imposta la città attuale
         currentCity = city;
-
+        console.log(texts[city]);
         // Genera e mostra i dati della città
-        const formattedData = formatCityData(city, x, y);
-        console.log(formattedData); // Puoi anche salvarlo su file se necessario
+        const cityParam = cityParameters[city];
+        const textsvalue = texts[city]
+        const formattedData = formatCityData(city, x, y,cityParam,textsvalue);
+        //console.log(formattedData); // Puoi anche salvarlo su file se necessario
       });
 
       // Funzione per disegnare il punto
@@ -474,33 +545,31 @@
       }
 
       // Funzione per generare i dati della città
-      function formatCityData(city, x, y) {
-        const cityIndex = Array.from(citySelect.options).findIndex(
-          (option) => option.value === city
-        );
-        const cityParam = cityParameters[city]; // Ottieni i parametri per la città selezionata
-        const { xText, yText } = texts[city]; // Ottieni la posizione del testo memorizzata
+function formatCityData(city, x, y, cityParam, texts) {
+    const cityIndex = Array.from(citySelect.options).findIndex(
+        (option) => option.value === city
+    );
+    return `// ${city}
+[Stadt${cityIndex}]
+AnfahrtXPos=${x}
+AnfahrtYPos=${y}
+NamenXPos=${x+10}  // Testo centrato orizzontalmente
+NamenYPos=${texts.yText}  // Testo posizionato 20px sotto il punto
+EreignisSymbolXPos=${x + 5} // Un esempio di offset per il simbolo
+EreignisSymbolYPos=${y + 40} // Un esempio di offset per il simbolo
+SchiffAufLandXPos=${x - 10}  // Un esempio di offset per la nave
+SchiffAufLandYPos=${y - 10}  // Un esempio di offset per la nave
+StadtSymbolXPos=${x}  // Posizione del simbolo della città
+StadtSymbolYPos=${y}
+NameLinksOderRechtsBuendig=${"c"}
+NameDerStadtMusik=${cityParam.NameDerStadtMusik}
+LautstaerkeDerMusik=${cityParam.LautstaerkeDerMusik}
+AmFluss=${cityParam.AmFluss}
+Region=${cityParam.Region}
+AusrichtungDesMeeres=${cityParam.AusrichtungDesMeeres}
+    `;
+}
 
-        return `// ${city}
-        [Stadt${cityIndex}]
-        AnfahrtXPos=${x}
-        AnfahrtYPos=${y}
-        NamenXPos=${xText}  // Usa la posizione X del testo memorizzata
-        NamenYPos=${yText}  // Usa la posizione Y del testo memorizzata
-        EreignisSymbolXPos=${x + 5} // Un esempio di offset per il simbolo
-        EreignisSymbolYPos=${y + 40} // Un esempio di offset per il simbolo
-        SchiffAufLandXPos=${x - 10}  // Un esempio di offset per la nave
-        SchiffAufLandYPos=${y - 10}  // Un esempio di offset per la nave
-        StadtSymbolXPos=${x}  // Posizione del simbolo della città
-        StadtSymbolYPos=${y}
-        NameLinksOderRechtsBuendig=${cityParam.NameLinksOderRechtsBuendig}
-        NameDerStadtMusik=${cityParam.NameDerStadtMusik}
-        LautstaerkeDerMusik=${cityParam.LautstaerkeDerMusik}
-        AmFluss=${cityParam.AmFluss}
-        Region=${cityParam.Region}
-        AusrichtungDesMeeres=${cityParam.AusrichtungDesMeeres}
-        `;
-        }
     </script>
     <center><h5>Made by DesertFalcon (Discord: desertfalcon_)</h5>
   </body>
