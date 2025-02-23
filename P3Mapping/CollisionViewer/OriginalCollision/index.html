@@ -24,6 +24,8 @@
     <h1>Visualizzazione Punti su Canvas</h1>
     <input type="file" id="fileInput" accept=".dat" />
     <br /><br />
+    <input type="file" id="imageInput" accept="image/*" />
+    <br /><br />
     <div class="input-group">
       <label for="point1">Punto 1:</label>
       <input type="number" id="point1" min="0" value="0" />
@@ -40,21 +42,32 @@
     <button onclick="clearLines()">Cancella Linee</button>
     <button onclick="showCoordinates()">Mostra Coordinate</button>
     <br /><br />
-    <img
-      id="backgroundImage"
-      src="ref.png"
-      alt="Immagine di sfondo"
-      style="display: none"
-    />
     <canvas id="canvas" width="1920" height="1080"></canvas>
 
     <script>
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
       const fileInput = document.getElementById("fileInput");
-      const backgroundImage = document.getElementById("backgroundImage");
-      let points = [];
+      let backgroundImage = new Image();
+      backgroundImage.src = "ref.png";
+      //const backgroundImage = document.getElementById("backgroundImage");
       
+      let points = [];
+
+      imageInput.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            backgroundImage.src = e.target.result;
+            backgroundImage.onload = function () {
+              drawPoints(points);
+            };
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
       fileInput.addEventListener("change", function (event) {
         const file = event.target.files[0];
         if (file) {
@@ -62,10 +75,10 @@
           reader.onload = function (e) {
             const data = new Uint8Array(e.target.result);
             console.log("Dati letti:", data);
-            
+
             const numPoints = data[0] | (data[1] << 8); // Leggi i primi 2 byte per il numero di punti
             console.log("Numero di punti:", numPoints);
-            
+
             points = [];
             for (let i = 4; i < data.length; i += 4) {
               const x = data[i] | (data[i + 1] << 8); // Leggi la coordinata x
@@ -73,7 +86,7 @@
               points.push({ x, y });
             }
             console.log("Punti letti:", points);
-            
+
             drawPoints(points);
           };
           reader.onerror = function (e) {
@@ -82,10 +95,9 @@
           reader.readAsArrayBuffer(file);
         }
       });
-      
-      const fileUrl =
-      "./nav_vec.dat";
-      
+
+      const fileUrl = "./nav_vec.dat";
+
       loadFile();
       function loadFile() {
         fetch(fileUrl)
