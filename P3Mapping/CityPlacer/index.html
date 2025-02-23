@@ -4,63 +4,63 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>City Mapper</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <center>
-    <h2>Select base map (2400x1800)</h2>
-    <input type="file" id="bgInput" accept="image/*" />
-    <h2>Select City to place</h2>
-    <select id="citySelect">
-      <option value="Edinburgh">Edinburgh</option>
-      <option value="Newcastle">Newcastle</option>
-      <option value="Scarborough">Scarborough</option>
-      <option value="Boston">Boston</option>
-      <option value="London">London</option>
-      <option value="Bruegge">Bruegge</option>
-      <option value="Haarlem">Haarlem</option>
-      <option value="Harlingen">Harlingen</option>
-      <option value="Groningen">Groningen</option>
-      <option value="Koeln">Koeln</option>
-      <option value="Bremen">Bremen</option>
-      <option value="Ripen">Ripen</option>
-      <option value="Hamburg">Hamburg</option>
-      <option value="Flensburg">Flensburg</option>
-      <option value="Luebeck">Luebeck</option>
-      <option value="Rostock">Rostock</option>
-      <option value="Bergen">Bergen</option>
-      <option value="Stavanger">Stavanger</option>
-      <option value="Toensberg">Toensberg</option>
-      <option value="Oslo">Oslo</option>
-      <option value="Aalborg">Aalborg</option>
-      <option value="Goeteborg">Goeteborg</option>
-      <option value="Naestved">Naestved</option>
-      <option value="Malmoe">Malmoe</option>
-      <option value="Ahus">Ahus</option>
-      <option value="Stockholm">Stockholm</option>
-      <option value="Visby">Visby</option>
-      <option value="Helsinki">Helsinki</option>
-      <option value="Stettin">Stettin</option>
-      <option value="Ruegenwald">Ruegenwald</option>
-      <option value="Danzig">Danzig</option>
-      <option value="Thorn">Thorn</option>
-      <option value="Koenigsberg">Koenigsberg</option>
-      <option value="Memel">Memel</option>
-      <option value="Windau">Windau</option>
-      <option value="Riga">Riga</option>
-      <option value="Pernau">Pernau</option>
-      <option value="Reval">Reval</option>
-      <option value="Ladoga">Ladoga</option>
-      <option value="Novgorod">Novgorod</option>
-    </select>
-    <br/>
-    <br/>
-    <button id="loadButton">Carica File</button>
-    <button id="saveButton">Salva Modifiche</button>
-    <br/>
-    <br/>
-    
-    <canvas id="mapCanvas" width="2400" height="1800"></canvas>
+      <h2>Select base map (2400x1800)</h2>
+      <input type="file" id="bgInput" accept="image/*" />
+      <h2>Select City to place</h2>
+      <select id="citySelect">
+        <option value="Edinburgh">Edinburgh</option>
+        <option value="Newcastle">Newcastle</option>
+        <option value="Scarborough">Scarborough</option>
+        <option value="Boston">Boston</option>
+        <option value="London">London</option>
+        <option value="Bruegge">Bruegge</option>
+        <option value="Haarlem">Haarlem</option>
+        <option value="Harlingen">Harlingen</option>
+        <option value="Groningen">Groningen</option>
+        <option value="Koeln">Koeln</option>
+        <option value="Bremen">Bremen</option>
+        <option value="Ripen">Ripen</option>
+        <option value="Hamburg">Hamburg</option>
+        <option value="Flensburg">Flensburg</option>
+        <option value="Luebeck">Luebeck</option>
+        <option value="Rostock">Rostock</option>
+        <option value="Bergen">Bergen</option>
+        <option value="Stavanger">Stavanger</option>
+        <option value="Toensberg">Toensberg</option>
+        <option value="Oslo">Oslo</option>
+        <option value="Aalborg">Aalborg</option>
+        <option value="Goeteborg">Goeteborg</option>
+        <option value="Naestved">Naestved</option>
+        <option value="Malmoe">Malmoe</option>
+        <option value="Ahus">Ahus</option>
+        <option value="Stockholm">Stockholm</option>
+        <option value="Visby">Visby</option>
+        <option value="Helsinki">Helsinki</option>
+        <option value="Stettin">Stettin</option>
+        <option value="Ruegenwald">Ruegenwald</option>
+        <option value="Danzig">Danzig</option>
+        <option value="Thorn">Thorn</option>
+        <option value="Koenigsberg">Koenigsberg</option>
+        <option value="Memel">Memel</option>
+        <option value="Windau">Windau</option>
+        <option value="Riga">Riga</option>
+        <option value="Pernau">Pernau</option>
+        <option value="Reval">Reval</option>
+        <option value="Ladoga">Ladoga</option>
+        <option value="Novgorod">Novgorod</option>
+      </select>
+      <br />
+      <br />
+      <button id="loadButton">Carica File</button>
+      <button id="saveButton">Salva Modifiche</button>
+      <br />
+      <br />
+
+      <canvas id="mapCanvas" width="2400" height="1800"></canvas>
     </center>
     <script>
       const cityParameters = {
@@ -408,65 +408,96 @@
         }
       });
 
-      document.getElementById('loadButton').addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.INI';
-            input.onchange = (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const content = e.target.result;
-                        parseCityData(content);
-                        drawBackground(); // Ridisegna lo sfondo con i nuovi punti
-                    };
-                    reader.readAsText(file);
-                }
+      // Funzione per caricare l'immagine di sfondo
+      function loadDefaultBackground() {
+        const img = new Image();
+        img.src = "Default_background.bmp";
+        img.onload = () => {
+          bgImage = img;
+          drawBackground(); // Disegna lo sfondo una volta caricato
+        };
+      }
+
+      // Funzione per caricare il file INI predefinito
+      function loadDefaultINI() {
+        fetch("Default.ini")
+          .then((response) => response.text())
+          .then((content) => {
+            parseCityData(content);
+            drawBackground(); // Ridisegna lo sfondo con i nuovi punti
+          });
+      }
+
+      // Carica l'immagine di sfondo e il file INI predefiniti all'avvio
+      window.onload = () => {
+        loadDefaultBackground();
+        loadDefaultINI();
+      };
+
+      document.getElementById("loadButton").addEventListener("click", () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".INI";
+        input.onchange = (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const content = e.target.result;
+              parseCityData(content);
+              drawBackground(); // Ridisegna lo sfondo con i nuovi punti
             };
-            input.click();
+            reader.readAsText(file);
+          }
+        };
+        input.click();
+      });
+
+      function parseCityData(content) {
+        const lines = content.split("\n");
+        let city = null;
+
+        lines.forEach((line) => {
+          if (line.startsWith("//")) {
+            currentCity = line.split(" ")[1].trim(); // Ottieni il nome della città
+          } else if (line.startsWith("AnfahrtXPos")) {
+            const x = parseFloat(line.split("=")[1].trim());
+            const y = parseFloat(
+              lines[lines.indexOf(line) + 1].split("=")[1].trim()
+            );
+            console.log(x, y, currentCity);
+            points[currentCity] = { x, y }; // Memorizza le coordinate
+            const textWidth = ctx.measureText(currentCity).width; // Calcola la larghezza del testo
+            texts[currentCity] = {
+              text: currentCity,
+              xText: x - 82 / 2,
+              yText: y + 20,
+            };
+          }
         });
+      }
 
+      document.getElementById("saveButton").addEventListener("click", () => {
+        const modifiedData = Object.keys(points)
+          .map((city) => {
+            console.log(city);
+            const { x, y } = points[city];
+            const { xText, yText } = texts[city];
+            console.log(city);
+            const cityParam = cityParameters[city];
+            const textsvalue = texts[city];
+            return formatCityData(city, x, y, cityParam, textsvalue);
+          })
+          .join("\n");
 
-        function parseCityData(content) {
-            const lines = content.split('\n');
-            let city = null;
-
-            lines.forEach(line => {
-                if (line.startsWith('//')) {
-                    currentCity = line.split(' ')[1].trim(); // Ottieni il nome della città
-                } else if (line.startsWith('AnfahrtXPos')) {
-                    const x = parseFloat(line.split('=')[1].trim());
-                    const y = parseFloat(lines[lines.indexOf(line) + 1].split('=')[1].trim());
-                    console.log(x,y,currentCity);
-                    points[currentCity] = { x, y }; // Memorizza le coordinate
-                    const textWidth = ctx.measureText(currentCity).width; // Calcola la larghezza del testo
-                    texts[currentCity] = { text: currentCity, xText: x - 82 / 2, yText: y + 20 };
-
-                }
-            });
-        }
-
-
-        document.getElementById('saveButton').addEventListener('click', () => {
-    const modifiedData = Object.keys(points).map(city => {
-        console.log(city);
-        const { x, y } = points[city];
-        const { xText, yText } = texts[city];
-        console.log(city);
-        const cityParam = cityParameters[city];
-        const textsvalue = texts[city];
-        return formatCityData(city, x, y, cityParam, textsvalue);
-    }).join('\n');
-
-    const blob = new Blob([modifiedData], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'cities_modified.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-});
+        const blob = new Blob([modifiedData], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "cities_modified.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
 
       // Funzione per ridisegnare lo sfondo senza cancellare i punti
       function drawBackground() {
@@ -480,9 +511,13 @@
             const textWidth = ctx.measureText(city).width;
             console.log(textWidth);
             drawPoint(x, y, city);
-            texts[city] = { text: city, xText: x - textWidth / 2, yText: y + 20 }; // Centra il testo rispetto al punto
+            texts[city] = {
+              text: city,
+              xText: x - textWidth / 2,
+              yText: y + 20,
+            }; // Centra il testo rispetto al punto
             const { text, xText, yText } = texts[city];
-            console.log(x,xText);
+            console.log(x, xText);
             ctx.fillStyle = "white"; // Colore del testo
             ctx.fillText(text, xText, yText); // Ridisegna il nome sotto il punto
           }
@@ -496,7 +531,7 @@
         const y = event.clientY - rect.top;
         const city = citySelect.value;
 
-       // const textWidth = ctx.measureText(city).width; // Calcola la larghezza del testo
+        // const textWidth = ctx.measureText(city).width; // Calcola la larghezza del testo
         // Se la città è cambiata, non cancellare il punto, aggiungi un nuovo punto
         if (city !== currentCity) {
           // Disegna il nuovo punto per la città selezionata
@@ -515,8 +550,8 @@
         console.log(texts[city]);
         // Genera e mostra i dati della città
         const cityParam = cityParameters[city];
-        const textsvalue = texts[city]
-        const formattedData = formatCityData(city, x, y,cityParam,textsvalue);
+        const textsvalue = texts[city];
+        const formattedData = formatCityData(city, x, y, cityParam, textsvalue);
         //console.log(formattedData); // Puoi anche salvarlo su file se necessario
       });
 
@@ -545,15 +580,15 @@
       }
 
       // Funzione per generare i dati della città
-function formatCityData(city, x, y, cityParam, texts) {
-    const cityIndex = Array.from(citySelect.options).findIndex(
-        (option) => option.value === city
-    );
-    return `// ${city}
+      function formatCityData(city, x, y, cityParam, texts) {
+        const cityIndex = Array.from(citySelect.options).findIndex(
+          (option) => option.value === city
+        );
+        return `// ${city}
 [Stadt${cityIndex}]
 AnfahrtXPos=${x}
 AnfahrtYPos=${y}
-NamenXPos=${x+10}  // Testo centrato orizzontalmente
+NamenXPos=${x + 10}  // Testo centrato orizzontalmente
 NamenYPos=${texts.yText}  // Testo posizionato 20px sotto il punto
 EreignisSymbolXPos=${x + 5} // Un esempio di offset per il simbolo
 EreignisSymbolYPos=${y + 40} // Un esempio di offset per il simbolo
@@ -568,9 +603,8 @@ AmFluss=${cityParam.AmFluss}
 Region=${cityParam.Region}
 AusrichtungDesMeeres=${cityParam.AusrichtungDesMeeres}
     `;
-}
-
+      }
     </script>
-    <center><h5>Made by DesertFalcon (Discord: desertfalcon_)</h5>
+    <center><h5>Made by DesertFalcon (Discord: desertfalcon_)</h5></center>
   </body>
 </html>
