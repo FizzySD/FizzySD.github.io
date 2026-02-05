@@ -23,35 +23,18 @@
 </header>
 
 <div class="container">
-
   
   <div class="card" style="margin-bottom:14px">
     <div class="p">
       <div style="font-weight:700">Animation</div>
       <div style="color:var(--muted);font-size:13px;margin-top:6px">Riproduzione dei frame ritagliati.</div>
       <div class="player" style="margin-top:12px" id="animPlayer" data-frames='[&quot;../assets/frames/TEX20008_frame000.png&quot;]'>
-        <div class="playerStage">
-          <img id="animImg" alt="animation frame"/>
-        </div>
+        <div class="playerStage"><img id="animImg" alt="animation frame"/></div>
         <div class="controls">
           <button class="btn" id="btnPlay">Play</button>
-
-          <span class="toggle">
-            <input type="checkbox" id="chkLoop" checked />
-            <label for="chkLoop">Loop</label>
-          </span>
-
-          <span class="rangeWrap">
-            <label for="rngFps">Speed</label>
-            <input type="range" id="rngFps" min="1" max="30" value="12" />
-            <span class="mono" id="fpsVal">12 fps</span>
-          </span>
-
-          <span class="rangeWrap" style="flex:1; min-width:260px">
-            <label for="rngFrame">Frame</label>
-            <input type="range" id="rngFrame" min="0" max="0" value="0" style="flex:1"/>
-            <span class="mono" id="frameVal">1 / 1</span>
-          </span>
+          <span class="toggle"><input type="checkbox" id="chkLoop" checked /><label for="chkLoop">Loop</label></span>
+          <span class="rangeWrap"><label for="rngFps">Speed</label><input type="range" id="rngFps" min="1" max="30" value="12" /><span class="mono" id="fpsVal">12 fps</span></span>
+          <span class="rangeWrap" style="flex:1; min-width:260px"><label for="rngFrame">Frame</label><input type="range" id="rngFrame" min="0" max="0" value="0" style="flex:1"/><span class="mono" id="frameVal">1 / 1</span></span>
         </div>
       </div>
     </div>
@@ -59,10 +42,8 @@
   <script>
 (function(){
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-
   const root = document.getElementById("animPlayer");
   if(!root) return;
-
   const frames = JSON.parse(root.dataset.frames || "[]");
   const imgEl = document.getElementById("animImg");
   const playBtn = document.getElementById("btnPlay");
@@ -71,76 +52,40 @@
   const fpsVal = document.getElementById("fpsVal");
   const scrub = document.getElementById("rngFrame");
   const frameVal = document.getElementById("frameVal");
-
   const total = frames.length;
-  if(total === 0){
-    playBtn.disabled = true;
-    return;
-  }
-
-  let idx = 0;
-  let playing = false;
-  let timer = null;
-
+  if(total === 0){ playBtn.disabled = true; return; }
+  let idx = 0, playing = false, timer = null;
   function show(i){
     idx = clamp(i, 0, total-1);
     imgEl.src = frames[idx];
     scrub.value = String(idx);
     frameVal.textContent = (idx+1) + " / " + total;
   }
-
   function stop(){
-    playing = false;
-    playBtn.textContent = "Play";
+    playing = false; playBtn.textContent = "Play";
     if(timer){ clearInterval(timer); timer = null; }
   }
-
   function start(){
     if(total <= 1) return;
-    playing = true;
-    playBtn.textContent = "Pause";
+    playing = true; playBtn.textContent = "Pause";
     const fps = clamp(parseInt(fpsRange.value || "12", 10), 1, 60);
     const interval = Math.round(1000 / fps);
     if(timer){ clearInterval(timer); }
     timer = setInterval(function(){
       let next = idx + 1;
       if(next >= total){
-        if(loopChk.checked){
-          next = 0;
-        } else {
-          show(total-1);
-          stop();
-          return;
-        }
+        if(loopChk.checked) next = 0;
+        else { show(total-1); stop(); return; }
       }
       show(next);
     }, interval);
   }
-
-  playBtn.addEventListener("click", function(){
-    if(playing) stop();
-    else start();
-  });
-
-  loopChk.addEventListener("change", function(){
-    // no-op
-  });
-
+  playBtn.addEventListener("click", function(){ playing ? stop() : start(); });
   fpsRange.addEventListener("input", function(){
     fpsVal.textContent = fpsRange.value + " fps";
-    if(playing){
-      start(); // restart with new interval
-    }
+    if(playing) start();
   });
-
-  scrub.addEventListener("input", function(){
-    show(parseInt(scrub.value, 10) || 0);
-    if(playing){
-      // continue playing from this frame
-    }
-  });
-
-  // init UI
+  scrub.addEventListener("input", function(){ show(parseInt(scrub.value, 10) || 0); });
   fpsVal.textContent = fpsRange.value + " fps";
   scrub.max = String(total-1);
   show(0);
@@ -152,7 +97,7 @@
     <div class="preview"><img src="../assets/originals/TEX20008.png" alt="TEX20008"/></div>
     <div class="p">
       <div class="kv">
-        <div>Project resolved path</div><div>C:\Users\marzi\Desktop\Patrician 3\output1\test2\images\sidemenu\Haken_Pergamentrolle.tga</div>
+        <div>Project path (relative)</div><div>images\sidemenu\Haken_Pergamentrolle.tga</div>
         <div>Staged source (site)</div><div>C:\Users\marzi\Desktop\Patrician 3\output1\test2\texture_docs\assets\sources\TEX20008.png</div>
         <div>UseAlpha</div><div>n/d</div>
         <div>UseColorKey</div><div>n/d</div>
@@ -166,29 +111,18 @@
   <div class="card">
     <div class="p" style="padding-bottom:0">
       <div style="font-weight:700">Frames</div>
-      <div style="color:var(--muted);font-size:13px;margin-top:6px">
-        Coordinate nel formato: <span class="mono">x y w h</span>
-      </div>
+      <div style="color:var(--muted);font-size:13px;margin-top:6px">Coordinate nel formato: <span class="mono">x y w h</span></div>
     </div>
     <div class="p" style="padding-top:10px">
       <table class="table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Preview</th>
-            <th>OffsetNSize</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+        <thead><tr><th>#</th><th>Preview</th><th>OffsetNSize</th><th>Status</th></tr></thead>
         <tbody>
-          
 <tr>
   <td style="width:70px">0</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX20008_frame000.png" alt="frame0"/></div></td>
   <td class="mono">0 0 24 16</td>
   <td class="">OK</td>
-</tr>
-        </tbody>
+</tr></tbody>
       </table>
     </div>
   </div>
