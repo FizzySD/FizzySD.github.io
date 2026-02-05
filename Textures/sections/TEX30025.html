@@ -23,6 +23,131 @@
 </header>
 
 <div class="container">
+
+  
+  <div class="card" style="margin-bottom:14px">
+    <div class="p">
+      <div style="font-weight:700">Animation</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:6px">Riproduzione dei frame ritagliati.</div>
+      <div class="player" style="margin-top:12px" id="animPlayer" data-frames='[&quot;../assets/frames/TEX30025_frame000.png&quot;, &quot;../assets/frames/TEX30025_frame001.png&quot;, &quot;../assets/frames/TEX30025_frame002.png&quot;, &quot;../assets/frames/TEX30025_frame003.png&quot;, &quot;../assets/frames/TEX30025_frame004.png&quot;, &quot;../assets/frames/TEX30025_frame005.png&quot;, &quot;../assets/frames/TEX30025_frame006.png&quot;, &quot;../assets/frames/TEX30025_frame007.png&quot;, &quot;../assets/frames/TEX30025_frame008.png&quot;, &quot;../assets/frames/TEX30025_frame009.png&quot;, &quot;../assets/frames/TEX30025_frame010.png&quot;, &quot;../assets/frames/TEX30025_frame011.png&quot;, &quot;../assets/frames/TEX30025_frame012.png&quot;, &quot;../assets/frames/TEX30025_frame013.png&quot;, &quot;../assets/frames/TEX30025_frame014.png&quot;, &quot;../assets/frames/TEX30025_frame015.png&quot;, &quot;../assets/frames/TEX30025_frame016.png&quot;, &quot;../assets/frames/TEX30025_frame017.png&quot;, &quot;../assets/frames/TEX30025_frame018.png&quot;, &quot;../assets/frames/TEX30025_frame019.png&quot;, &quot;../assets/frames/TEX30025_frame020.png&quot;, &quot;../assets/frames/TEX30025_frame021.png&quot;, &quot;../assets/frames/TEX30025_frame022.png&quot;, &quot;../assets/frames/TEX30025_frame023.png&quot;, &quot;../assets/frames/TEX30025_frame024.png&quot;, &quot;../assets/frames/TEX30025_frame025.png&quot;, &quot;../assets/frames/TEX30025_frame026.png&quot;, &quot;../assets/frames/TEX30025_frame027.png&quot;, &quot;../assets/frames/TEX30025_frame028.png&quot;, &quot;../assets/frames/TEX30025_frame029.png&quot;]'>
+        <div class="playerStage">
+          <img id="animImg" alt="animation frame"/>
+        </div>
+        <div class="controls">
+          <button class="btn" id="btnPlay">Play</button>
+
+          <span class="toggle">
+            <input type="checkbox" id="chkLoop" checked />
+            <label for="chkLoop">Loop</label>
+          </span>
+
+          <span class="rangeWrap">
+            <label for="rngFps">Speed</label>
+            <input type="range" id="rngFps" min="1" max="30" value="12" />
+            <span class="mono" id="fpsVal">12 fps</span>
+          </span>
+
+          <span class="rangeWrap" style="flex:1; min-width:260px">
+            <label for="rngFrame">Frame</label>
+            <input type="range" id="rngFrame" min="0" max="29" value="0" style="flex:1"/>
+            <span class="mono" id="frameVal">1 / 30</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+(function(){
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  const root = document.getElementById("animPlayer");
+  if(!root) return;
+
+  const frames = JSON.parse(root.dataset.frames || "[]");
+  const imgEl = document.getElementById("animImg");
+  const playBtn = document.getElementById("btnPlay");
+  const loopChk = document.getElementById("chkLoop");
+  const fpsRange = document.getElementById("rngFps");
+  const fpsVal = document.getElementById("fpsVal");
+  const scrub = document.getElementById("rngFrame");
+  const frameVal = document.getElementById("frameVal");
+
+  const total = frames.length;
+  if(total === 0){
+    playBtn.disabled = true;
+    return;
+  }
+
+  let idx = 0;
+  let playing = false;
+  let timer = null;
+
+  function show(i){
+    idx = clamp(i, 0, total-1);
+    imgEl.src = frames[idx];
+    scrub.value = String(idx);
+    frameVal.textContent = (idx+1) + " / " + total;
+  }
+
+  function stop(){
+    playing = false;
+    playBtn.textContent = "Play";
+    if(timer){ clearInterval(timer); timer = null; }
+  }
+
+  function start(){
+    if(total <= 1) return;
+    playing = true;
+    playBtn.textContent = "Pause";
+    const fps = clamp(parseInt(fpsRange.value || "12", 10), 1, 60);
+    const interval = Math.round(1000 / fps);
+    if(timer){ clearInterval(timer); }
+    timer = setInterval(function(){
+      let next = idx + 1;
+      if(next >= total){
+        if(loopChk.checked){
+          next = 0;
+        } else {
+          show(total-1);
+          stop();
+          return;
+        }
+      }
+      show(next);
+    }, interval);
+  }
+
+  playBtn.addEventListener("click", function(){
+    if(playing) stop();
+    else start();
+  });
+
+  loopChk.addEventListener("change", function(){
+    // no-op
+  });
+
+  fpsRange.addEventListener("input", function(){
+    fpsVal.textContent = fpsRange.value + " fps";
+    if(playing){
+      start(); // restart with new interval
+    }
+  });
+
+  scrub.addEventListener("input", function(){
+    show(parseInt(scrub.value, 10) || 0);
+    if(playing){
+      // continue playing from this frame
+    }
+  });
+
+  // init UI
+  fpsVal.textContent = fpsRange.value + " fps";
+  scrub.max = String(total-1);
+  show(0);
+})();
+</script>
+
+
   <div class="card" style="margin-bottom:14px">
     <div class="preview"><img src="../assets/originals/TEX30025.png" alt="TEX30025"/></div>
     <div class="p">
@@ -42,7 +167,7 @@
     <div class="p" style="padding-bottom:0">
       <div style="font-weight:700">Frames</div>
       <div style="color:var(--muted);font-size:13px;margin-top:6px">
-        Coordinate nel formato: <span style="font-family:ui-monospace,monospace">x y w h</span>
+        Coordinate nel formato: <span class="mono">x y w h</span>
       </div>
     </div>
     <div class="p" style="padding-top:10px">
@@ -60,181 +185,181 @@
 <tr>
   <td style="width:70px">0</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame000.png" alt="frame0"/></div></td>
-  <td style="font-family:ui-monospace,monospace">0 0 80 77</td>
+  <td class="mono">0 0 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">1</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame001.png" alt="frame1"/></div></td>
-  <td style="font-family:ui-monospace,monospace">80 0 80 77</td>
+  <td class="mono">80 0 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">2</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame002.png" alt="frame2"/></div></td>
-  <td style="font-family:ui-monospace,monospace">160 0 80 77</td>
+  <td class="mono">160 0 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">3</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame003.png" alt="frame3"/></div></td>
-  <td style="font-family:ui-monospace,monospace">240 0 80 77</td>
+  <td class="mono">240 0 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">4</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame004.png" alt="frame4"/></div></td>
-  <td style="font-family:ui-monospace,monospace">320 0 80 77</td>
+  <td class="mono">320 0 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">5</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame005.png" alt="frame5"/></div></td>
-  <td style="font-family:ui-monospace,monospace">0 77 80 77</td>
+  <td class="mono">0 77 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">6</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame006.png" alt="frame6"/></div></td>
-  <td style="font-family:ui-monospace,monospace">80 77 80 77</td>
+  <td class="mono">80 77 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">7</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame007.png" alt="frame7"/></div></td>
-  <td style="font-family:ui-monospace,monospace">160 77 80 77</td>
+  <td class="mono">160 77 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">8</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame008.png" alt="frame8"/></div></td>
-  <td style="font-family:ui-monospace,monospace">240 77 80 77</td>
+  <td class="mono">240 77 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">9</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame009.png" alt="frame9"/></div></td>
-  <td style="font-family:ui-monospace,monospace">320 77 80 77</td>
+  <td class="mono">320 77 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">10</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame010.png" alt="frame10"/></div></td>
-  <td style="font-family:ui-monospace,monospace">0 154 80 77</td>
+  <td class="mono">0 154 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">11</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame011.png" alt="frame11"/></div></td>
-  <td style="font-family:ui-monospace,monospace">80 154 80 77</td>
+  <td class="mono">80 154 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">12</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame012.png" alt="frame12"/></div></td>
-  <td style="font-family:ui-monospace,monospace">160 154 80 77</td>
+  <td class="mono">160 154 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">13</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame013.png" alt="frame13"/></div></td>
-  <td style="font-family:ui-monospace,monospace">240 154 80 77</td>
+  <td class="mono">240 154 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">14</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame014.png" alt="frame14"/></div></td>
-  <td style="font-family:ui-monospace,monospace">320 154 80 77</td>
+  <td class="mono">320 154 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">15</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame015.png" alt="frame15"/></div></td>
-  <td style="font-family:ui-monospace,monospace">0 231 80 77</td>
+  <td class="mono">0 231 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">16</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame016.png" alt="frame16"/></div></td>
-  <td style="font-family:ui-monospace,monospace">80 231 80 77</td>
+  <td class="mono">80 231 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">17</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame017.png" alt="frame17"/></div></td>
-  <td style="font-family:ui-monospace,monospace">160 231 80 77</td>
+  <td class="mono">160 231 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">18</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame018.png" alt="frame18"/></div></td>
-  <td style="font-family:ui-monospace,monospace">240 231 80 77</td>
+  <td class="mono">240 231 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">19</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame019.png" alt="frame19"/></div></td>
-  <td style="font-family:ui-monospace,monospace">320 231 80 77</td>
+  <td class="mono">320 231 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">20</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame020.png" alt="frame20"/></div></td>
-  <td style="font-family:ui-monospace,monospace">0 308 80 77</td>
+  <td class="mono">0 308 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">21</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame021.png" alt="frame21"/></div></td>
-  <td style="font-family:ui-monospace,monospace">80 308 80 77</td>
+  <td class="mono">80 308 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">22</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame022.png" alt="frame22"/></div></td>
-  <td style="font-family:ui-monospace,monospace">160 308 80 77</td>
+  <td class="mono">160 308 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">23</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame023.png" alt="frame23"/></div></td>
-  <td style="font-family:ui-monospace,monospace">240 308 80 77</td>
+  <td class="mono">240 308 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">24</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame024.png" alt="frame24"/></div></td>
-  <td style="font-family:ui-monospace,monospace">320 308 80 77</td>
+  <td class="mono">320 308 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">25</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame025.png" alt="frame25"/></div></td>
-  <td style="font-family:ui-monospace,monospace">0 385 80 77</td>
+  <td class="mono">0 385 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">26</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame026.png" alt="frame26"/></div></td>
-  <td style="font-family:ui-monospace,monospace">80 385 80 77</td>
+  <td class="mono">80 385 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">27</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame027.png" alt="frame27"/></div></td>
-  <td style="font-family:ui-monospace,monospace">160 385 80 77</td>
+  <td class="mono">160 385 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">28</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame028.png" alt="frame28"/></div></td>
-  <td style="font-family:ui-monospace,monospace">240 385 80 77</td>
+  <td class="mono">240 385 80 77</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">29</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX30025_frame029.png" alt="frame29"/></div></td>
-  <td style="font-family:ui-monospace,monospace">320 385 80 77</td>
+  <td class="mono">320 385 80 77</td>
   <td class="">OK</td>
 </tr>
         </tbody>

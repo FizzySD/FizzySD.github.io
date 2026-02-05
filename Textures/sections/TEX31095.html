@@ -23,6 +23,131 @@
 </header>
 
 <div class="container">
+
+  
+  <div class="card" style="margin-bottom:14px">
+    <div class="p">
+      <div style="font-weight:700">Animation</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:6px">Riproduzione dei frame ritagliati.</div>
+      <div class="player" style="margin-top:12px" id="animPlayer" data-frames='[&quot;../assets/frames/TEX31095_frame000.png&quot;, &quot;../assets/frames/TEX31095_frame001.png&quot;, &quot;../assets/frames/TEX31095_frame002.png&quot;, &quot;../assets/frames/TEX31095_frame003.png&quot;, &quot;../assets/frames/TEX31095_frame004.png&quot;, &quot;../assets/frames/TEX31095_frame005.png&quot;, &quot;../assets/frames/TEX31095_frame006.png&quot;, &quot;../assets/frames/TEX31095_frame007.png&quot;, &quot;../assets/frames/TEX31095_frame008.png&quot;, &quot;../assets/frames/TEX31095_frame009.png&quot;, &quot;../assets/frames/TEX31095_frame010.png&quot;, &quot;../assets/frames/TEX31095_frame011.png&quot;, &quot;../assets/frames/TEX31095_frame012.png&quot;, &quot;../assets/frames/TEX31095_frame013.png&quot;, &quot;../assets/frames/TEX31095_frame014.png&quot;, &quot;../assets/frames/TEX31095_frame015.png&quot;, &quot;../assets/frames/TEX31095_frame016.png&quot;, &quot;../assets/frames/TEX31095_frame017.png&quot;, &quot;../assets/frames/TEX31095_frame018.png&quot;, &quot;../assets/frames/TEX31095_frame019.png&quot;, &quot;../assets/frames/TEX31095_frame020.png&quot;, &quot;../assets/frames/TEX31095_frame021.png&quot;, &quot;../assets/frames/TEX31095_frame022.png&quot;, &quot;../assets/frames/TEX31095_frame023.png&quot;, &quot;../assets/frames/TEX31095_frame024.png&quot;, &quot;../assets/frames/TEX31095_frame025.png&quot;, &quot;../assets/frames/TEX31095_frame026.png&quot;, &quot;../assets/frames/TEX31095_frame027.png&quot;, &quot;../assets/frames/TEX31095_frame028.png&quot;, &quot;../assets/frames/TEX31095_frame029.png&quot;, &quot;../assets/frames/TEX31095_frame030.png&quot;, &quot;../assets/frames/TEX31095_frame031.png&quot;, &quot;../assets/frames/TEX31095_frame032.png&quot;, &quot;../assets/frames/TEX31095_frame033.png&quot;, &quot;../assets/frames/TEX31095_frame034.png&quot;, &quot;../assets/frames/TEX31095_frame035.png&quot;, &quot;../assets/frames/TEX31095_frame036.png&quot;, &quot;../assets/frames/TEX31095_frame037.png&quot;, &quot;../assets/frames/TEX31095_frame038.png&quot;, &quot;../assets/frames/TEX31095_frame039.png&quot;, &quot;../assets/frames/TEX31095_frame040.png&quot;, &quot;../assets/frames/TEX31095_frame041.png&quot;, &quot;../assets/frames/TEX31095_frame042.png&quot;, &quot;../assets/frames/TEX31095_frame043.png&quot;, &quot;../assets/frames/TEX31095_frame044.png&quot;, &quot;../assets/frames/TEX31095_frame045.png&quot;, &quot;../assets/frames/TEX31095_frame046.png&quot;, &quot;../assets/frames/TEX31095_frame047.png&quot;, &quot;../assets/frames/TEX31095_frame048.png&quot;, &quot;../assets/frames/TEX31095_frame049.png&quot;]'>
+        <div class="playerStage">
+          <img id="animImg" alt="animation frame"/>
+        </div>
+        <div class="controls">
+          <button class="btn" id="btnPlay">Play</button>
+
+          <span class="toggle">
+            <input type="checkbox" id="chkLoop" checked />
+            <label for="chkLoop">Loop</label>
+          </span>
+
+          <span class="rangeWrap">
+            <label for="rngFps">Speed</label>
+            <input type="range" id="rngFps" min="1" max="30" value="12" />
+            <span class="mono" id="fpsVal">12 fps</span>
+          </span>
+
+          <span class="rangeWrap" style="flex:1; min-width:260px">
+            <label for="rngFrame">Frame</label>
+            <input type="range" id="rngFrame" min="0" max="49" value="0" style="flex:1"/>
+            <span class="mono" id="frameVal">1 / 50</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+(function(){
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  const root = document.getElementById("animPlayer");
+  if(!root) return;
+
+  const frames = JSON.parse(root.dataset.frames || "[]");
+  const imgEl = document.getElementById("animImg");
+  const playBtn = document.getElementById("btnPlay");
+  const loopChk = document.getElementById("chkLoop");
+  const fpsRange = document.getElementById("rngFps");
+  const fpsVal = document.getElementById("fpsVal");
+  const scrub = document.getElementById("rngFrame");
+  const frameVal = document.getElementById("frameVal");
+
+  const total = frames.length;
+  if(total === 0){
+    playBtn.disabled = true;
+    return;
+  }
+
+  let idx = 0;
+  let playing = false;
+  let timer = null;
+
+  function show(i){
+    idx = clamp(i, 0, total-1);
+    imgEl.src = frames[idx];
+    scrub.value = String(idx);
+    frameVal.textContent = (idx+1) + " / " + total;
+  }
+
+  function stop(){
+    playing = false;
+    playBtn.textContent = "Play";
+    if(timer){ clearInterval(timer); timer = null; }
+  }
+
+  function start(){
+    if(total <= 1) return;
+    playing = true;
+    playBtn.textContent = "Pause";
+    const fps = clamp(parseInt(fpsRange.value || "12", 10), 1, 60);
+    const interval = Math.round(1000 / fps);
+    if(timer){ clearInterval(timer); }
+    timer = setInterval(function(){
+      let next = idx + 1;
+      if(next >= total){
+        if(loopChk.checked){
+          next = 0;
+        } else {
+          show(total-1);
+          stop();
+          return;
+        }
+      }
+      show(next);
+    }, interval);
+  }
+
+  playBtn.addEventListener("click", function(){
+    if(playing) stop();
+    else start();
+  });
+
+  loopChk.addEventListener("change", function(){
+    // no-op
+  });
+
+  fpsRange.addEventListener("input", function(){
+    fpsVal.textContent = fpsRange.value + " fps";
+    if(playing){
+      start(); // restart with new interval
+    }
+  });
+
+  scrub.addEventListener("input", function(){
+    show(parseInt(scrub.value, 10) || 0);
+    if(playing){
+      // continue playing from this frame
+    }
+  });
+
+  // init UI
+  fpsVal.textContent = fpsRange.value + " fps";
+  scrub.max = String(total-1);
+  show(0);
+})();
+</script>
+
+
   <div class="card" style="margin-bottom:14px">
     <div class="preview"><img src="../assets/originals/TEX31095.png" alt="TEX31095"/></div>
     <div class="p">
@@ -42,7 +167,7 @@
     <div class="p" style="padding-bottom:0">
       <div style="font-weight:700">Frames</div>
       <div style="color:var(--muted);font-size:13px;margin-top:6px">
-        Coordinate nel formato: <span style="font-family:ui-monospace,monospace">x y w h</span>
+        Coordinate nel formato: <span class="mono">x y w h</span>
       </div>
     </div>
     <div class="p" style="padding-top:10px">
@@ -60,301 +185,301 @@
 <tr>
   <td style="width:70px">0</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame000.png" alt="frame0"/></div></td>
-  <td style="font-family:ui-monospace,monospace">0 0 88 118</td>
+  <td class="mono">0 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">1</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame001.png" alt="frame1"/></div></td>
-  <td style="font-family:ui-monospace,monospace">88 0 88 118</td>
+  <td class="mono">88 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">2</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame002.png" alt="frame2"/></div></td>
-  <td style="font-family:ui-monospace,monospace">176 0 88 118</td>
+  <td class="mono">176 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">3</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame003.png" alt="frame3"/></div></td>
-  <td style="font-family:ui-monospace,monospace">264 0 88 118</td>
+  <td class="mono">264 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">4</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame004.png" alt="frame4"/></div></td>
-  <td style="font-family:ui-monospace,monospace">352 0 88 118</td>
+  <td class="mono">352 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">5</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame005.png" alt="frame5"/></div></td>
-  <td style="font-family:ui-monospace,monospace">440 0 88 118</td>
+  <td class="mono">440 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">6</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame006.png" alt="frame6"/></div></td>
-  <td style="font-family:ui-monospace,monospace">528 0 88 118</td>
+  <td class="mono">528 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">7</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame007.png" alt="frame7"/></div></td>
-  <td style="font-family:ui-monospace,monospace">616 0 88 118</td>
+  <td class="mono">616 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">8</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame008.png" alt="frame8"/></div></td>
-  <td style="font-family:ui-monospace,monospace">704 0 88 118</td>
+  <td class="mono">704 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">9</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame009.png" alt="frame9"/></div></td>
-  <td style="font-family:ui-monospace,monospace">792 0 88 118</td>
+  <td class="mono">792 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">10</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame010.png" alt="frame10"/></div></td>
-  <td style="font-family:ui-monospace,monospace">880 0 88 118</td>
+  <td class="mono">880 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">11</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame011.png" alt="frame11"/></div></td>
-  <td style="font-family:ui-monospace,monospace">968 0 88 118</td>
+  <td class="mono">968 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">12</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame012.png" alt="frame12"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1056 0 88 118</td>
+  <td class="mono">1056 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">13</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame013.png" alt="frame13"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1144 0 88 118</td>
+  <td class="mono">1144 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">14</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame014.png" alt="frame14"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1232 0 88 118</td>
+  <td class="mono">1232 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">15</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame015.png" alt="frame15"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1320 0 88 118</td>
+  <td class="mono">1320 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">16</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame016.png" alt="frame16"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1408 0 88 118</td>
+  <td class="mono">1408 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">17</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame017.png" alt="frame17"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1496 0 88 118</td>
+  <td class="mono">1496 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">18</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame018.png" alt="frame18"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1584 0 88 118</td>
+  <td class="mono">1584 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">19</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame019.png" alt="frame19"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1672 0 88 118</td>
+  <td class="mono">1672 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">20</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame020.png" alt="frame20"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1760 0 88 118</td>
+  <td class="mono">1760 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">21</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame021.png" alt="frame21"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1848 0 88 118</td>
+  <td class="mono">1848 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">22</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame022.png" alt="frame22"/></div></td>
-  <td style="font-family:ui-monospace,monospace">1936 0 88 118</td>
+  <td class="mono">1936 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">23</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame023.png" alt="frame23"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2024 0 88 118</td>
+  <td class="mono">2024 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">24</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame024.png" alt="frame24"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2112 0 88 118</td>
+  <td class="mono">2112 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">25</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame025.png" alt="frame25"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2200 0 88 118</td>
+  <td class="mono">2200 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">26</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame026.png" alt="frame26"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2288 0 88 118</td>
+  <td class="mono">2288 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">27</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame027.png" alt="frame27"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2376 0 88 118</td>
+  <td class="mono">2376 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">28</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame028.png" alt="frame28"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2464 0 88 118</td>
+  <td class="mono">2464 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">29</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame029.png" alt="frame29"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2552 0 88 118</td>
+  <td class="mono">2552 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">30</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame030.png" alt="frame30"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2640 0 88 118</td>
+  <td class="mono">2640 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">31</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame031.png" alt="frame31"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2728 0 88 118</td>
+  <td class="mono">2728 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">32</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame032.png" alt="frame32"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2816 0 88 118</td>
+  <td class="mono">2816 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">33</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame033.png" alt="frame33"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2904 0 88 118</td>
+  <td class="mono">2904 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">34</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame034.png" alt="frame34"/></div></td>
-  <td style="font-family:ui-monospace,monospace">2992 0 88 118</td>
+  <td class="mono">2992 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">35</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame035.png" alt="frame35"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3080 0 88 118</td>
+  <td class="mono">3080 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">36</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame036.png" alt="frame36"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3168 0 88 118</td>
+  <td class="mono">3168 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">37</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame037.png" alt="frame37"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3256 0 88 118</td>
+  <td class="mono">3256 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">38</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame038.png" alt="frame38"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3344 0 88 118</td>
+  <td class="mono">3344 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">39</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame039.png" alt="frame39"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3432 0 88 118</td>
+  <td class="mono">3432 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">40</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame040.png" alt="frame40"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3520 0 88 118</td>
+  <td class="mono">3520 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">41</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame041.png" alt="frame41"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3608 0 88 118</td>
+  <td class="mono">3608 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">42</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame042.png" alt="frame42"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3696 0 88 118</td>
+  <td class="mono">3696 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">43</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame043.png" alt="frame43"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3784 0 88 118</td>
+  <td class="mono">3784 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">44</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame044.png" alt="frame44"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3872 0 88 118</td>
+  <td class="mono">3872 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">45</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame045.png" alt="frame45"/></div></td>
-  <td style="font-family:ui-monospace,monospace">3960 0 88 118</td>
+  <td class="mono">3960 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">46</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame046.png" alt="frame46"/></div></td>
-  <td style="font-family:ui-monospace,monospace">4048 0 88 118</td>
+  <td class="mono">4048 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">47</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame047.png" alt="frame47"/></div></td>
-  <td style="font-family:ui-monospace,monospace">4136 0 88 118</td>
+  <td class="mono">4136 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">48</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame048.png" alt="frame48"/></div></td>
-  <td style="font-family:ui-monospace,monospace">4224 0 88 118</td>
+  <td class="mono">4224 0 88 118</td>
   <td class="">OK</td>
 </tr>
 <tr>
   <td style="width:70px">49</td>
   <td style="width:210px"><div class="thumb"><img src="../assets/frames/TEX31095_frame049.png" alt="frame49"/></div></td>
-  <td style="font-family:ui-monospace,monospace">4312 0 88 118</td>
+  <td class="mono">4312 0 88 118</td>
   <td class="">OK</td>
 </tr>
         </tbody>
